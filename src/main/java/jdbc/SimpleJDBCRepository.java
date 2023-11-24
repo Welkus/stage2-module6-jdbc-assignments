@@ -21,11 +21,11 @@ public class SimpleJDBCRepository {
     private Statement st = null;
 
     private static final String createUserSQL = "INSERT INTO myuser (first_name,last_name,age) VALUES ('John','Butch',30)";
-    private static final String updateUserSQL = "UPDATE myuser age=20 WHERE name = John";
-    private static final String deleteUser = "";
+    private static final String updateUserSQL = "UPDATE myuser age=20 where first_name = 'John' AND last_name = 'Butch'";
+    private static final String deleteUser = "DELETE FROM myuser WHERE id = ?";
     private static final String findUserByIdSQL = "SELECT * FROM myuser WHERE id = ?";
     private static final String findUserByNameSQL = "SELECT * FROM myuser WHERE userName = ?";
-    private static final String findAllUserSQL = "";
+    private static final String findAllUserSQL = "SELECT * FROM myuser";
 
     public Long createUser() {
 
@@ -98,8 +98,8 @@ public class SimpleJDBCRepository {
         List<User> usList = new ArrayList<>();
         try {
             connection = CustomDataSource.getInstance().getConnection();
-            st = connection.createStatement();
-            ResultSet rs = st.executeQuery("SELECT * FROM myuser");
+            ps = connection.prepareStatement(findAllUserSQL);
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()){
                 id = rs.getLong("id");
@@ -125,7 +125,7 @@ public class SimpleJDBCRepository {
             connection = CustomDataSource.getInstance().getConnection();
             ps = connection.prepareStatement(updateUserSQL);
             ps.executeUpdate();
-            String s = "SELECT * FROM myuser WHERE userName = ?";
+            String s = "SELECT * FROM myuser where first_name = ?";
             PreparedStatement pp = connection.prepareStatement(s);
             pp.setString(1,"John");
             ResultSet rs = pp.executeQuery();
@@ -148,8 +148,10 @@ public class SimpleJDBCRepository {
 
         try {
             connection = CustomDataSource.getInstance().getConnection();
-            st = connection.createStatement();
-           st.execute("DELETE FROM myuser WHERE id = "+userId);
+           ps = connection.prepareStatement(deleteUser);
+           ps.setLong(1,userId);
+
+           ps.executeUpdate();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
