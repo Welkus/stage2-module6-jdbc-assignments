@@ -20,16 +20,27 @@ public class SimpleJDBCRepository {
     private PreparedStatement ps = null;
     private Statement st = null;
 
-    private static final String createUserSQL = "";
-    private static final String updateUserSQL = "";
+    private static final String createUserSQL = "INSERT INTO myuser (first_name,last_name,age) VALUES ('John','Butch',30)";
+    private static final String updateUserSQL = "UPDATE myuser age=20 WHERE name = John";
     private static final String deleteUser = "";
-    private static final String findUserByIdSQL = "";
-    private static final String findUserByNameSQL = "";
+    private static final String findUserByIdSQL = "SELECT * FROM myuser WHERE id = ?";
+    private static final String findUserByNameSQL = "SELECT * FROM myuser WHERE userName = ?";
     private static final String findAllUserSQL = "";
 
     public Long createUser() {
 
-       return null;
+        try {
+            connection = CustomDataSource.getInstance().getConnection();
+            ps = connection.prepareStatement(createUserSQL, Statement.RETURN_GENERATED_KEYS);
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+
+
+            return rs.getLong(1);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public User findUserById(Long userId) {
@@ -39,8 +50,10 @@ public class SimpleJDBCRepository {
         int age = 0;
         try {
             connection = CustomDataSource.getInstance().getConnection();
-            st = connection.createStatement();
-            ResultSet rs = st.executeQuery("SELECT * FROM myuser WHERE id = "+userId);
+            ps = connection.prepareStatement(findUserByIdSQL);
+            ps.setLong(1,userId);
+
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()){
                 id = rs.getLong("id");
@@ -61,8 +74,9 @@ public class SimpleJDBCRepository {
         int age = 0;
         try {
             connection = CustomDataSource.getInstance().getConnection();
-            st = connection.createStatement();
-            ResultSet rs = st.executeQuery("SELECT * FROM myuser WHERE userName = "+userName);
+            ps = connection.prepareStatement(findUserByNameSQL);
+            ps.setString(1,userName);
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()){
                 id = rs.getLong("id");
@@ -103,7 +117,31 @@ public class SimpleJDBCRepository {
     }
 
     public User updateUser() {
-        return null;
+        long id = 0L;
+        String firstName = "";
+        String lastName = "";
+        int age = 0;
+        try {
+            connection = CustomDataSource.getInstance().getConnection();
+            ps = connection.prepareStatement(updateUserSQL);
+            ps.executeUpdate();
+            String s = "SELECT * FROM myuser WHERE userName = ?";
+            PreparedStatement pp = connection.prepareStatement(s);
+            pp.setString(1,"John");
+            ResultSet rs = pp.executeQuery();
+
+            while (rs.next()){
+                id = rs.getLong("id");
+                firstName = rs.getString("firstname");
+                lastName = rs.getString("lastname");
+                age = rs.getInt("age");
+            }
+            return new User(id,firstName,lastName,age);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     private void deleteUser(Long userId) {
@@ -111,7 +149,7 @@ public class SimpleJDBCRepository {
         try {
             connection = CustomDataSource.getInstance().getConnection();
             st = connection.createStatement();
-           st.execute("SELECT * FROM myuser WHERE id = "+userId);
+           st.execute("DELETE FROM myuser WHERE id = "+userId);
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
