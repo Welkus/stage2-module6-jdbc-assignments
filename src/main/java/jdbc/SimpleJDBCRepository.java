@@ -48,7 +48,7 @@ public class SimpleJDBCRepository {
             ps = connection.prepareStatement(findUserByIdSQL);
             ps.setLong(1,userId);
             ResultSet rs = ps.executeQuery();
-
+            rs.next();
             return new User(
                     rs.getLong(1),
                     rs.getString(2),
@@ -64,7 +64,7 @@ public class SimpleJDBCRepository {
             ps = connection.prepareStatement(findUserByNameSQL);
             ps.setString(1,userName);
             ResultSet rs = ps.executeQuery();
-
+            rs.next();
             return new User(
                     rs.getLong(1),
                     rs.getString(2),
