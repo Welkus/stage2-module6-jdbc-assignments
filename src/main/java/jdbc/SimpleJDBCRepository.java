@@ -35,7 +35,7 @@ public class SimpleJDBCRepository {
             ps.setInt(3,user.getAge());
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
-
+            rs.next();
             return rs.getLong(1);
         } catch (SQLException e) {
             throw new RuntimeException(e);
