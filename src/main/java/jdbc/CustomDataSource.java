@@ -37,7 +37,7 @@ public class CustomDataSource implements DataSource {
     public static CustomDataSource getInstance() {
 
         if(instance == null){
-            try(InputStream inp = CustomDataSource.class.getClassLoader().getResourceAsStream("app.properites")
+            try(InputStream inp = CustomDataSource.class.getClassLoader().getResourceAsStream("app.properties")
                     ){
                 Properties props = new Properties();
                 props.load(inp);
